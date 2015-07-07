@@ -1,0 +1,8 @@
+black
+brown
+blond
+auburn
+chestnut
+red
+gray
+white
