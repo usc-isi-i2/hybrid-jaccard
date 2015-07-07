@@ -76,13 +76,15 @@ class HybridJaccard:
             return 'NONE'
         return self.references[similarities.index(max_sim)]
 
-colors = []
-sm = HybridJaccard()
-with open("input.txt") as input:
-    for line in input:
-		#line = line.lower()
-		args = re.search('([0-9]+) <(.*)> (.*)', line)
-		#print(args.group(3))
-		match = sm.findBestMatch(args.group(3))
-		#match = sm.findBestMatch(line)
-		print(line+" => "+match)
+# call main() if this is run as standalone
+if __name__ == "__main__":
+    colors = []
+    sm = HybridJaccard()
+    with open("input.txt") as input:
+        for line in input:
+                    #line = line.lower()
+                    args = re.search('([0-9]+) <(.*)> (.*)', line)
+                    #print(args.group(3))
+                    match = sm.findBestMatch(args.group(3))
+                    #match = sm.findBestMatch(line)
+                    print(line+" => "+match)
