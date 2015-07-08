@@ -1,8 +1,8 @@
-black
-brown
-blond
+black: raven, 
+brown: brunette
+blond: flaxen, fair
 auburn
 chestnut
-red
-gray
+red: ginger
+gray: platinum
 white

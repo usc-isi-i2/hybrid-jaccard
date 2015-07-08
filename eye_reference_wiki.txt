@@ -1,5 +1,5 @@
 amber
-blue
+blue: azure, sapphire
 brown
 gray
 green
