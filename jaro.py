@@ -156,8 +156,8 @@ def string_metrics(s1, s2, typo_table=None, typo_scale=1, boost_threshold=None,
     """
     # Defaults are chosen to do least work necessary to get the valuesfor the
     # Jaro metric.
-    assert isinstance(s1, str)
-    assert isinstance(s2, str)
+    assert isinstance(s1, (str, unicode))
+    assert isinstance(s2, (str, unicode))
     assert typo_scale > 0
     assert boost_threshold is None or boost_threshold > 0
     assert pre_len >= 0
