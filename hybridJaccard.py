@@ -3,26 +3,36 @@ import munkres
 import json
 import re
 
-class HybridJaccard:
-    threshold = .8
-    method = "jaro"
-    references = []
-
-    def __init__(self, ref_path='eye_reference.txt', config_path='eye_config.txt'):
+class HybridJaccard(object):
+    def __init__(self, ref_path='eye_reference.txt', config_path='eye_config.txt',
+                 threshold = 0.8,
+                 method = "jaro"):
+        self.threshold = threshold
+        self.method = method
+        self.references = []
+        self.labels = {}
         self.build_reference(ref_path)
         self.setup_config(config_path)
 
     def setup_config(self, config_path):
-        with open(config_path) as data_file:
-            data = json.load(data_file)
+        with open(config_path, 'r') as data_file:
+            self.data = json.load(data_file)
 
-        self.threshold = float(data["method_type"]["parameters"]["threshold"])
-        self.method = data["method_type"]["partial_method"]
+        self.threshold = float(self.data["method_type"]["parameters"]["threshold"])
+        self.method = self.data["method_type"]["partial_method"]
         
     def build_reference(self, ref_path):
-        with open(ref_path) as ref_colors:
-            for color in ref_colors:
-                self.references.append(color)
+        with open(ref_path, 'r') as ref_colors:
+            for line in ref_colors:
+                main, _, synonyms = line.partition(":")
+                synonyms = [s.strip() for s in synonyms.split(',')]
+                main = main.strip()
+                self.references.append(main)
+                self.labels[main] = main
+                for synonym in synonyms:
+                    if synonym:
+                        self.references.append(synonym)
+                        self.labels[synonym] = main
 
     def levenshtein_sim(self, seq1, seq2):
         oneago = None
@@ -71,10 +81,13 @@ class HybridJaccard:
         for r in self.references:
             sim_index = self.sim_measure(input,r)
             similarities.append(sim_index)
-        max_sim = max(similarities)
+        try:
+            max_sim = max(similarities)
+        except:
+            return "Error: input=%r, similarities=%r" % (input, similarities)
         if max_sim < 1e-20:
             return 'NONE'
-        return self.references[similarities.index(max_sim)]
+        return self.labels[self.references[similarities.index(max_sim)]]
 
 # call main() if this is run as standalone
 if __name__ == "__main__":
@@ -82,9 +95,18 @@ if __name__ == "__main__":
     sm = HybridJaccard()
     with open("input.txt") as input:
         for line in input:
-                    #line = line.lower()
-                    args = re.search('([0-9]+) <(.*)> (.*)', line)
-                    #print(args.group(3))
-                    match = sm.findBestMatch(args.group(3))
-                    #match = sm.findBestMatch(line)
-                    print(line+" => "+match)
+            #line = line.lower()
+            args = re.search('([0-9]+) <(.*)> (.*)', line)
+            #print(args.group(3))
+            match = sm.findBestMatch(args.group(3))
+            #match = sm.findBestMatch(line)
+            print(line+" => "+match)
+            
+            # test for non-default reference sets
+            h = HybridJaccard(ref_path='hair_reference_wiki.txt', config_path='hair_config.txt')
+            e = HybridJaccard(ref_path='eye_reference_wiki.txt', config_path='eye_config.txt')
+            
+            print h.findBestMatch(u'long blond hair')
+            print h.findBestMatch(u'platinum hair')
+            print e.findBestMatch(u'beautiful blue eyes')
+            print e.findBestMatch(u'eyes of green')
