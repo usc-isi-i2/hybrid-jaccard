@@ -1,8 +1,0 @@
-amber
-blue: azure, sapphire
-brown
-gray
-green
-hazel
-red
-violet
