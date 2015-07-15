@@ -27,6 +27,7 @@ class HybridJaccard(object):
                 main, _, synonyms = line.partition(":")
                 synonyms = [s.strip() for s in synonyms.split(',')]
                 main = main.strip()
+                print main, synonyms
                 self.references.append(main)
                 self.labels[main] = main
                 for synonym in synonyms:
