@@ -27,7 +27,6 @@ class HybridJaccard(object):
                 main, _, synonyms = line.partition(":")
                 synonyms = [s.strip() for s in synonyms.split(',')]
                 main = main.strip()
-                print main, synonyms
                 self.references.append(main)
                 self.labels[main] = main
                 for synonym in synonyms:
@@ -104,8 +103,8 @@ if __name__ == "__main__":
             print(line+" => "+match)
             
             # test for non-default reference sets
-            h = HybridJaccard(ref_path='hair_reference_wiki.txt', config_path='hair_config.txt')
-            e = HybridJaccard(ref_path='eye_reference_wiki.txt', config_path='eye_config.txt')
+            h = HybridJaccard(ref_path='hair_reference.txt', config_path='hair_config.txt')
+            e = HybridJaccard(ref_path='eye_reference.txt', config_path='eye_config.txt')
             
             print h.findBestMatch(u'long blond hair')
             print h.findBestMatch(u'platinum hair')
