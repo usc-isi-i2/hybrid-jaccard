@@ -322,7 +322,7 @@ class Munkres:
 
         Please use the module function ``make_cost_matrix()``.
         """
-        import munkres
+        from . import munkres
         return munkres.make_cost_matrix(profit_matrix, inversion_function)
 
     make_cost_matrix = staticmethod(make_cost_matrix)
@@ -785,7 +785,7 @@ if __name__ == '__main__':
         for r, c in indexes:
             x = cost_matrix[r][c]
             total_cost += x
-            print('(%d, %d) -> %d' % (r, c, x))
-        print('lowest cost=%d' % total_cost)
+            print(('(%d, %d) -> %d' % (r, c, x)))
+        print(('lowest cost=%d' % total_cost))
         assert expected_total == total_cost
 

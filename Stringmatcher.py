@@ -1,5 +1,5 @@
-import jaro
-import munkres
+from . import jaro
+from . import munkres
 import json
 import re
 
@@ -27,10 +27,10 @@ class StringMatcher:
 
     def levenshtein_sim(self, seq1, seq2):
         oneago = None
-        thisrow = range(1, len(seq2) + 1) + [0]
-        for x in xrange(len(seq1)):
+        thisrow = list(range(1, len(seq2) + 1)) + [0]
+        for x in range(len(seq1)):
             twoago, oneago, thisrow = oneago, thisrow, [0] * len(seq2) + [x + 1]
-            for y in xrange(len(seq2)):
+            for y in range(len(seq2)):
                 delcost = oneago[y] + 1
                 addcost = thisrow[y - 1] + 1
                 subcost = oneago[y - 1] + (seq1[x] != seq2[y])
@@ -86,4 +86,4 @@ with open("sentences.txt") as input:
         #args = re.search('([0-9]+) <(.*)> (.*)', line)
         #match = sm.findBestMatch(args.group(3))
         match = sm.findBestMatch(line)
-        print(line + " => " + match)
+        print((line + " => " + match))

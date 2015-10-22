@@ -1,5 +1,5 @@
-import jaro
-import munkres
+from . import jaro
+from . import munkres
 import json
 import re
 
@@ -36,10 +36,10 @@ class HybridJaccard(object):
 
     def levenshtein_sim(self, seq1, seq2):
         oneago = None
-        thisrow = range(1, len(seq2) + 1) + [0]
-        for x in xrange(len(seq1)):
+        thisrow = list(range(1, len(seq2) + 1)) + [0]
+        for x in range(len(seq1)):
             twoago, oneago, thisrow = oneago, thisrow, [0] * len(seq2) + [x + 1]
-            for y in xrange(len(seq2)):
+            for y in range(len(seq2)):
                 delcost = oneago[y] + 1
                 addcost = thisrow[y - 1] + 1
                 subcost = oneago[y - 1] + (seq1[x] != seq2[y])
@@ -100,13 +100,13 @@ if __name__ == "__main__":
             #print(args.group(3))
             match = sm.findBestMatch(args.group(3))
             #match = sm.findBestMatch(line)
-            print(line+" => "+match)
+            print((line+" => "+match))
             
             # test for non-default reference sets
             h = HybridJaccard(ref_path='hair_reference.txt', config_path='hair_config.txt')
             e = HybridJaccard(ref_path='eye_reference.txt', config_path='eye_config.txt')
             
-            print h.findBestMatch(u'long blond hair')
-            print h.findBestMatch(u'platinum hair')
-            print e.findBestMatch(u'beautiful blue eyes')
-            print e.findBestMatch(u'eyes of green')
+            print(h.findBestMatch('long blond hair'))
+            print(h.findBestMatch('platinum hair'))
+            print(e.findBestMatch('beautiful blue eyes'))
+            print(e.findBestMatch('eyes of green'))
