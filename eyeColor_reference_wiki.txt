@@ -1,8 +1,8 @@
 amber
 blue: azure, sapphire
 brown
-gray
+gray: grey
 green
 hazel
 red
-violet
+violet: purple
