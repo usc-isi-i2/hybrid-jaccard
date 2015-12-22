@@ -1,5 +1,5 @@
-from . import jaro
-from . import munkres
+import jaro
+import munkres
 import json
 import re
 
