@@ -3,7 +3,7 @@
 
 import os
 import sys
-from .typo_tables import adjwt
+from typo_tables import adjwt
 
 def fn_jaro(len1, len2, num_matches, half_transposes, typo_score, typo_scale):
     """Calculate the classic Jaro metric between two strings.
