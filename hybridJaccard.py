@@ -77,6 +77,9 @@ class HybridJaccard(object):
         return sum(values)/(len(str1_words)+len(str2_words)-len(values)+values.count(0.0))
 
     def findBestMatch(self, input):
+        """Find the best match to the input."""
+        # This could be a little faster if "labels" were a sequence, parallel to "references".
+        # Perhaps performance would improve if we tracked max_sim_index, skipping the index(...) call at the end?
         similarities = []
         for r in self.references:
             sim_index = self.sim_measure(input,r)
