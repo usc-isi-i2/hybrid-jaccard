@@ -7,12 +7,12 @@ true blue
 payne's grey
 international orange
 oxford blue
-brown
+brown: brownish
 magenta
 purple
 ultramarine
 violet
-yellow
+yellow: yellowish
 chestnut
 oxblood
 rust
@@ -23,11 +23,11 @@ fulvous
 jungle green
 nivo
 black
-blue
+blue: bluish
 cyan
-green
+green: greenish
 indigo
-red
+red: reddish
 sienna
 beige
 navajo white
