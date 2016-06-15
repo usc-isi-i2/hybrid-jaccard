@@ -6,8 +6,10 @@ import re
 class HybridJaccard(object):
     def __init__(self, ref_path=None, config_path=None,
                  threshold = 0.8,
+                 method_type="method_type"
                  method = "jaro"):
         self.threshold = threshold
+        self.method_type = method_type
         self.set_sim_metric(method)
         self.reference_phrases = []
         self.labels = []
@@ -51,7 +53,7 @@ class HybridJaccard(object):
             self.build_configuration(json.load(data_file))
 
     def build_configuration(self, data):
-        method_data = data.get("method_type")
+        method_data = data.get(self.method_type)
         if method_data is not None:
             parameters = method_data.get("parameters")
             if parameters is not None:
