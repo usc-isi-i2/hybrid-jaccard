@@ -4,41 +4,57 @@ import json
 import re
 
 class HybridJaccard(object):
-    def __init__(self, ref_path='eye_reference.txt', config_path='eye_config.txt',
+    def __init__(self, ref_path=None, config_path=None,
                  threshold = 0.8,
                  method = "jaro"):
         self.threshold = threshold
-        self.method = method
-        self.setup_sim_metric()
-        self.reference_words = []
+        self.set_sim_metric(method)
+        self.reference_phrases = []
         self.labels = []
         self.cache = {}
         self.m = munkres.Munkres() # Create a Munkres object, which can be used multiple times.
-        self.build_reference(ref_path)
-        self.setup_config(config_path)
+        if ref_path is not None:
+            self.read_reference_file(ref_path)
+        if config_path is not None:
+            self.read_config_file(config_path)
 
-    def setup_config(self, config_path):
+    def read_reference_file(self, ref_path):
+        """Read the reference file, building the lists of reference words and the resulting labels."""
+        with open(ref_path, 'r') as ref_lines:
+            for ref_line in ref_lines:
+                self.build_references(ref_line)
+
+    def build_references(self, ref_line):
+        main_phrase, _, equivalents = ref_line.partition(":")
+        equivalent_phrases = [s.strip() for s in equivalents.split(',')]
+        main_phrase = main_phrase.strip()
+        self.reference_phrases.append(main_phrase.split())
+        self.labels.append(main_phrase)
+        for equivalent_phrase in equivalent_phrases:
+            if len(equivalent_phrase) > 0:
+                self.reference_phrases.append(equivalent_phrase.split())
+                self.labels.append(main_phrase)
+
+    def read_config_file(self, config_path):
         """Read the configuration file, extracting the method name and threshold."""
         with open(config_path, 'r') as data_file:
-            self.data = json.load(data_file)
+            self.build_configuration(json.load(data_file))
 
-        self.threshold = float(self.data["method_type"]["parameters"]["threshold"])
-        self.method = self.data["method_type"]["partial_method"]
-        self.setup_sim_metric()
-
-    def build_reference(self, ref_path):
-        """Read the reference file, building the lists of reference words and the resulting labels."""
-        with open(ref_path, 'r') as ref_colors:
-            for line in ref_colors:
-                main, _, synonyms = line.partition(":")
-                synonyms = [s.strip() for s in synonyms.split(',')]
-                main = main.strip()
-                self.reference_words.append(main.split())
-                self.labels.append(main)
-                for synonym in synonyms:
-                    if synonym:
-                        self.reference_words.append(synonym.split())
-                        self.labels.append(main)
+    def build_configuration(self, data):
+        method_data = data.get("method_type")
+        if method_data is not None:
+            parameters = method_data.get("parameters")
+            if parameters is not None:
+                threshold_string = parameters.get("threshold")
+                if threshold_string is not None:
+                    self.threshold = float(threshold_string)
+            method = method_data.get("partial_method")
+            if method is not None:
+                self.set_sim_metric(method)
+        references = data.get("references")
+        if references is not None:
+            for ref_line in references:
+                self.build_references(ref_line)
 
     def jaro_winkler_sim(self, seq1, seq2):
         return jaro.metric_jaro_winkler(seq1, seq2)
@@ -57,9 +73,10 @@ class HybridJaccard(object):
         min_len = min({len(seq1),len(seq2)})
         return float(max_len - thisrow[len(seq2) - 1])/float(min_len)
 
-    def setup_sim_metric(self):
+    def set_sim_metric(self, method):
         """Save the current metric function in sim_metric."""
-        if self.method == "jaro":
+        self.method = method
+        if method == "jaro":
             self.sim_metric = self.jaro_winkler_sim
         else:
             self.sim_metric = self.levenshtein_sim
@@ -83,50 +100,90 @@ class HybridJaccard(object):
             values.append(1.0 - outer_arr[row][column]) #go back to similarity
         return sum(values)/(len(str1_words)+len(str2_words)-len(values)+values.count(0.0))
 
-    def findBestMatch(self, input_str):
-        """Find the best match, without caching the result. Use if input strings do not repeat often."""
-        input_words = input_str.split()
-        max_sim = 0 # chosen to return NONE if reference_words is empty.
+    def findBestMatchWords(self, input_words):
+        """Find the best match, without caching the result. Call directly if input
+        word sequences do not repeat often, otherwise use of the cache is
+        recommended. Returns the singleton value None (not the string "NONE")
+        if no match is found.
+
+        """
+        max_sim = 0 # chosen to return None if reference_phrases is empty.
         max_sim_index = 0 # initial value does not matter
-        for idx, ref_words in enumerate(self.reference_words):
+        for idx, ref_words in enumerate(self.reference_phrases):
             similarity = self.sim_measure(input_words, ref_words)
             if similarity > max_sim:
                 max_sim = similarity
                 max_sim_index = idx
         if max_sim < 1e-20: # Shouldn't this threshold be parameterized?
-            return 'NONE'
+            return None
         return self.labels[max_sim_index]
 
-    def findBestMatchCached(self, input_str):
-        """Find the best match, caching the result.  Use if input strings will repeat often."""
-        result = self.cache.get(input_str)
-        if result is None:
-            result = self.findBestMatch(input_str)
+    def findBestMatchWordsCached(self, input_words):
+        """Find the best match, caching the result.  Use if input word sequences will
+        repeat often. Returns the singleton value None (not the string "NONE")
+        if no match is found.
+
+        """
+        # Build a single string for cache lookup:
+        #
+        # TODO: The join character should be parameterized for special occasions.
+        input_str = " ".join(input_words)
+        # Look for the string in the cache.  None is an allowable result, so
+        # use False to indicate that an entry was not found.
+        result = self.cache.get(input_str, False)
+        if result is False:
+            result = self.findBestMatchWords(input_words)
+            self.cache[input_str] = result
+        return result
+
+    def findBestMatchString(self, input_str):
+        """Find the best match, without caching the result. The input is a string,
+        which will be split on white space into words. Use if input strings do
+        not repeat often. Returns the singleton value None (not the string
+        "NONE") if no match is found.
+
+        """
+        return self.findBestMatchWords(input_str.split())
+
+    def findBestMatchStringCached(self, input_str):
+        """Find the best match, caching the result.  The input is a string, which will
+        be split on white space into words. Use if input strings will repeat
+        often. Returns the singleton value None (not the string "NONE") if no
+        match is found.
+
+        """
+        # Look for the string in the cache.  None is an allowable result, so
+        # use False to indicate that an entry was not found.
+        result = self.cache.get(input_str, False)
+        if result is False:
+            result = self.findBestMatchString(input_str)
             self.cache[input_str] = result
         return result
 
 # call main() if this is run as standalone
 if __name__ == "__main__":
     colors = []
-    sm = HybridJaccard()
+    sm = HybridJaccard(ref_path='eye_reference.txt', config_path='eye_config.txt')
     with open("input.txt") as input:
         for line in input:
             line = line.strip()
             #line = line.lower()
             args = re.search('([0-9]+) <(.*)> (.*)', line)
             #print(args.group(3))
-            match = sm.findBestMatchCached(args.group(3))
+            match = sm.findBestMatchStringCached(args.group(3))
+            if match is None:
+                match = "NONE"
             #match = sm.findBestMatch(line)
             print(line+" => "+match)
             
     # test for non-default reference sets
     print "hair-reference:"
     h = HybridJaccard(ref_path='hair_reference.txt', config_path='hair_config.txt')
-    print "long blond hair => " + h.findBestMatch(u'long blond hair')
-    print "platinum hair => " + h.findBestMatch(u'platinum hair')
+    print "long blond hair => " + h.findBestMatchString(u'long blond hair')
+    print "platinum hair => " + h.findBestMatchString(u'platinum hair')
 
     print "eye-reference:"
     e = HybridJaccard(ref_path='eye_reference.txt', config_path='eye_config.txt')
-    print "beautiful blue eyes => " + e.findBestMatch(u'beautiful blue eyes')
-    print "eyes of green => " + e.findBestMatch(u'eyes of green')
+    print "beautiful blue eyes => " + e.findBestMatchString(u'beautiful blue eyes')
+    print "eyes of green => " + e.findBestMatchString(u'eyes of green')
 
