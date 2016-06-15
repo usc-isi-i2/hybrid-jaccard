@@ -55,6 +55,10 @@ class HybridJaccard(object):
         if references is not None:
             for ref_line in references:
                 self.build_references(ref_line)
+        referencesFiles = data.get("references_files")
+        if referencesFiles is not None:
+            for ref_file in referencesFiles:
+                self.read_reference_file(ref_file)
 
     def jaro_winkler_sim(self, seq1, seq2):
         return jaro.metric_jaro_winkler(seq1, seq2)
