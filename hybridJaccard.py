@@ -28,10 +28,20 @@ class HybridJaccard(object):
         main_phrase, _, equivalents = ref_line.partition(":")
         equivalent_phrases = [s.strip() for s in equivalents.split(',')]
         main_phrase = main_phrase.strip()
-        self.reference_phrases.append(main_phrase.split())
-        self.labels.append(main_phrase)
+        if not main_phrase in self.labels:
+            # Record only unique instances.
+            #
+            # TODO: It should be an error for a main phrase to match a
+            # previously declared equivalent phrase.
+            self.reference_phrases.append(main_phrase.split())
+            self.labels.append(main_phrase)
         for equivalent_phrase in equivalent_phrases:
-            if len(equivalent_phrase) > 0:
+            if equivalent_phrase and not equivalent_phrase in self.labels:
+                # Skip empty phrases. If an equivalent phrase occurs multiple times,
+                # keep the first mapping and ignore the rest.
+                #
+                # TODO: It should be an error for an equivalent phrase to occur
+                # multiple times or to match a main phrase.
                 self.reference_phrases.append(equivalent_phrase.split())
                 self.labels.append(main_phrase)
 
