@@ -6,7 +6,7 @@ import re
 class HybridJaccard(object):
     def __init__(self, ref_path=None, config_path=None,
                  threshold = 0.8,
-                 method_type="method_type"
+                 method_type="method_type",
                  method = "jaro"):
         self.threshold = threshold
         self.method_type = method_type
