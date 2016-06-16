@@ -12,7 +12,7 @@ def main():
     args = parser.parse_args()
 
     sm = hj.HybridJaccard(ref_path=args.referenceFile, config_path=args.configFile)
-    with open("input.txt") as input:
+    with open(args.input) as input:
         for line in input:
             line = line.strip()
             match = sm.findBestMatchStringCached(line)
