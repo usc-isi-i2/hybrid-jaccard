@@ -115,3 +115,33 @@ violet
 	The first set of whitespace-separated words on a line is a reference
 phrase.  if there is a colon, it may be followed by a comma-separated list of
 phrases (aliases).  The aliases will be mapped to the main (left-side) phrase.
+
+Samples:
+
+The "samples" folder is intended to hold sample files for testing
+HybridJaccard.  There is one sample folder at present:
+
+hbase-dump-2015-10-01-2015-12-01-aman-hbase/
+
+This folder contains:
+
+2 original sample files:
+
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-hair-eyes-sample.txt
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-name-ethnic-sample.txt
+
+2 intermediary files:
+
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-hair-eyes-sample.jsonl
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-name-ethnic-sample.jsonl
+
+6 final sample files:
+
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-eyes-sample.jsonl
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-hair-sample.jsonl
+
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-B_ethnic-sample.jsonl
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-B_workingname-sample.jsonl
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-I_ethnic-sample.jsonl
+hbase-dump-2015-10-01-2015-12-01-aman-hbase-crf-I_workingname-sample.jsonl
+
