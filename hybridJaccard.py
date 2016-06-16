@@ -34,8 +34,9 @@ class HybridJaccard(object):
             #
             # TODO: It should be an error for a main phrase to match a
             # previously declared equivalent phrase.
-            self.reference_phrases.append(main_phrase.split())
-            self.labels.append(main_phrase)
+            main_phrase_words = main_phrase.split()
+            self.reference_phrases.append(main_phrase_words)
+            self.labels.append(main_phrase_words)
         for equivalent_phrase in equivalent_phrases:
             if equivalent_phrase and not equivalent_phrase in self.labels:
                 # Skip empty phrases. If an equivalent phrase occurs multiple times,
@@ -44,7 +45,7 @@ class HybridJaccard(object):
                 # TODO: It should be an error for an equivalent phrase to occur
                 # multiple times or to match a main phrase.
                 self.reference_phrases.append(equivalent_phrase.split())
-                self.labels.append(main_phrase)
+                self.labels.append(main_phrase.split())
 
     def read_config_file(self, config_path):
         """Read the configuration file, extracting the method name and threshold."""
@@ -53,21 +54,21 @@ class HybridJaccard(object):
 
     def build_configuration(self, data):
         method_data = data.get(self.method_type)
-        if method_data is not None:
+        if method_data:
             parameters = method_data.get("parameters")
-            if parameters is not None:
+            if parameters:
                 threshold_string = parameters.get("threshold")
-                if threshold_string is not None:
+                if threshold_string:
                     self.threshold = float(threshold_string)
             method = method_data.get("partial_method")
-            if method is not None:
+            if method:
                 self.set_sim_metric(method)
-        references = data.get("references")
-        if references is not None:
+        references = method_data.get("references")
+        if references:
             for ref_line in references:
                 self.build_references(ref_line)
-        referencesFiles = data.get("references_files")
-        if referencesFiles is not None:
+        referencesFiles = method_data.get("references_files")
+        if referencesFiles:
             for ref_file in referencesFiles:
                 self.read_reference_file(ref_file)
 
@@ -155,16 +156,20 @@ class HybridJaccard(object):
         """Find the best match, without caching the result. The input is a string,
         which will be split on white space into words. Use if input strings do
         not repeat often. Returns the singleton value None (not the string
-        "NONE") if no match is found.
+        "NONE") if no match is found, otherwise returns a string result.
 
         """
-        return self.findBestMatchWords(input_str.split())
+        result = self.findBestMatchWords(input_str.split())
+        if result:
+            result = " ".join(result)
+        return result
+        
 
     def findBestMatchStringCached(self, input_str):
         """Find the best match, caching the result.  The input is a string, which will
         be split on white space into words. Use if input strings will repeat
         often. Returns the singleton value None (not the string "NONE") if no
-        match is found.
+        match is found, otherwise returns a string result.
 
         """
         # Look for the string in the cache.  None is an allowable result, so
